@@ -1,4 +1,4 @@
-Text::Contraction version 0.01
+Text::Contraction version 0.02
 ==============================
 
 Text::Contraction finds possible expansions for contractions.  For example,
@@ -20,8 +20,6 @@ To install this module type the following:
    make install
 
 COPYRIGHT AND LICENCE
-
-Put the correct copyright and licence information here.
 
 Copyright (C) 2004 Benjamin Holzman
 

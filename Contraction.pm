@@ -7,7 +7,7 @@ use warnings;
 require Carp;
 require POSIX;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub new {
   my($type, %args) = @_;
@@ -81,8 +81,16 @@ sub _w {
     }
   }
 
-  Carp::croak "Could not find dictionary. Try setting environment variable\n".
-	      "CONTRACTION_WORDS to the path of your dictionary.\n";
+  if (defined $ENV{'CONTRACTION_WORDS'}) {
+    if (-e $ENV{'CONTRACTION_WORDS'}) {
+      Carp::croak "Dictionary '$ENV{q(CONTRACTION_WORDS)}' is empty.\n";
+    } else {
+      Carp::croak "Could not find dictionary '$ENV{q(CONTRACTION_WORDS)}'.\n";
+    }
+  } else {
+    Carp::croak "Could not find dictionary. Try setting environment variable\n".
+	        "CONTRACTION_WORDS to the path of your dictionary.\n";
+  }
 }
 
 sub study {
@@ -103,8 +111,8 @@ sub study {
 sub match {
   my($this, $contraction) = @_;
 
-  # strip single quotes
   $contraction =~ y/'//d;
+
   my $prefix;
   if ($this->{caseless}) {
     $contraction = uc $contraction;
@@ -116,8 +124,8 @@ sub match {
   $this->study unless $this->{_words};
 
   # find most discriminating character 
-  my($bestChar, $bestIndex, $bestScore) =
-    (substr($contraction, -1, 1), length($contraction) - 1, undef);
+  my($bestChar,                   $bestIndex,               $bestScore) =
+    (substr($contraction, -1, 1), length($contraction) - 1, undef     );
 
   for (my $i = length($contraction) - 1; $i >= 0; $i--) {
     my $char = substr($contraction, $i, 1);
@@ -174,15 +182,15 @@ Text::Contraction - Find possible expansions for a contraction.
 =head1 SYNOPSIS
 
   use Text::Contraction;
-  my $cntrctn = Text::Contraction->new();
-  my @matches = $cntrctn->match('flgstff');
+  my $tc = Text::Contraction->new();
+  my @matches = $tc->match('flgstff');
 
   # on my system this produces 'Flagstaff'
 
 =head1 ABSTRACT
 
 Text::Contraction finds possible expansions for a contraction.  It relies
-on the system dictionary for the list of candidate words, or the use
+on the system dictionary for the list of candidate words, or the user
 may supply a dictionary of their own choosing.
 
 =head1 DESCRIPTION
@@ -215,9 +223,10 @@ Perform search case insensitively.  DEFAULT: 1
 =item minRatio
 
 Minimum ratio of letters from the contraction to letters in the possible
-expansions.  If the minRatio if 0.5 and there are 4 letters in the contraction,
-the longest word that will be returned will have 8 letters.  Must be between
-0 and 1, inclusive. DEFAULT: 0.5
+expansions.  If C<minRatio> if 0.5 and there are 4 letters in the contraction,
+the longest word that will be returned will have 8 letters.  Apostrophes in the
+contraction do not count, but apostrophes in the expansions do.  This is most
+likely a bug.  C<minRatio> must be between 0 and 1, inclusive. DEFAULT: 0.5
 
 =item prefix
 
@@ -262,9 +271,7 @@ called upon the first call to match().
 
 Returns possible expansions for the supplied contraction.
 
-=head2 EXPORT
-
-None.
+=back
 
 =head1 HISTORY
 
@@ -272,13 +279,11 @@ None.
 
 =item 0.01
 
-Original version; created by h2xs 1.22 with options
+Original version; created by h2xs 1.22
 
-  -ACX
-	-n
-	Text::Contraction
-	-b
-	5.6.2
+=item 0.02
+
+Documentation tweaks.  Added tests.
 
 =back
 

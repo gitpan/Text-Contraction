@@ -6,7 +6,7 @@
 # change 'tests => 1' to 'tests => last_test_to_print';
 
 use Test;
-BEGIN { plan tests => 30 };
+BEGIN { plan tests => 40 };
 use Text::Contraction;
 ok(1); # If we made it this far, we're ok.
 
@@ -74,3 +74,25 @@ ok($m[0], 'shall not');
 @m = $tc->match("won't");
 ok(0+@m, 1);
 ok($m[0], "wouldn't");
+
+$tc = Text::Contraction->new(words => [ 'a', 'A' ], caseless => 0);
+@m = $tc->match('a');
+ok(0+@m, 1);
+ok($m[0], 'a');
+
+@m = $tc->match('A');
+ok(0+@m, 1);
+ok($m[0], 'A');
+
+ok($tc->caseless(1),1);
+
+$tc->words(['a', 'A']);
+ok($tc->{_words}, undef);
+
+$tc->study();
+ok(ref $tc->{_words}, 'ARRAY');
+
+@m = sort $tc->match('a');
+ok(0+@m, 2);
+ok($m[0], 'A');
+ok($m[1], 'a');
